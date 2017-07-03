@@ -1,0 +1,5 @@
+# General entries
+
+# IntelliJ project files
+.idea
+*.iml
