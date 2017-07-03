@@ -107,3 +107,7 @@
 
 # Contributing
   Please do! PR's are very welcome. The author is far from thinking that this wrapper library is perfect.
+  
+# TODO
+ - Finish the Unit tests and commit them
+ - Rename `XmlPayload` to `XmlLoaderPayload`
