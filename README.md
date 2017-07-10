@@ -1,4 +1,4 @@
-# SimpleXMlLoader
+# SimpleXMLLoader
   A simple wrapper around SimpleXML's interface for loading XML resources or string data. 
 
   Main goals:
@@ -110,4 +110,4 @@
   
 # TODO
  - Finish the Unit tests and commit them
- - Rename `XmlPayload` to `XmlLoaderPayload`
+ - Rename `XmlPayload` to `XmlLoaderPayload`?
