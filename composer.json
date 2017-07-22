@@ -1,8 +1,12 @@
 {
     "name": "borislavsabev/simple-xml-loader",
     "description": "A minimalistic SimpleXml loader. Wraps the simplexml_load_XXXX() methods and provides error handling.",
+    "keywords" : ["xml", "simplexml", "SimpleXml", "XmlLoader", "SimpleXmlLoader"],
+    "homepage" : "https://github.com/BorislavSabev/SimpleXmlLoader",
     "type": "library",
     "license": "GPL-3.0",
+    "prefer-stable": true,
+    "minimum-stability": "stable",
     "require": {
         "ext-libxml" : "*",
         "ext-SimpleXML": "*"
@@ -12,8 +16,12 @@
     },
     "autoload": {
         "psr-4": {
-            "BorislavSabev\\SimpleXmlLoader\\": "src/",
-            "BorislavSabev\\SimpleXmlLoader\\Tests": "tests/"
+            "BorislavSabev\\SimpleXmlLoader\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BorislavSabev\\SimpleXmlLoader\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -21,6 +29,5 @@
             "name": "Borislav Sabev",
             "email": "sabev.borislav@gmail.com"
         }
-    ],
-    "minimum-stability": "dev"
+    ]
 }

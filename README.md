@@ -1,30 +1,31 @@
 # SimpleXMLLoader
-  A simple wrapper around SimpleXML's interface for loading XML resources or string data. 
+  A minimalistic SimpleXml loader. Wraps the simplexml_load_XXXX() methods and provides libxml error handling. 
 
-  Main goals:
+## Main goals:
   - provide a transparent OOP interface to SimpleXML's `simplexml_load_file()` and `simplexml_load_string()` functions
   - handle SimpleXML's internal errors
-  - follow LibXMl's functional API
   - throw catchable Exceptions (XmlLoaderException)
 
   This wrapper will:
-   - try to load your XML resource into a \SimpleXMLElement object
+   - try to load your XML resource into a \SimpleXMLElement object and return it
    - handle any LibXML errors that occur during loading
 
   This wrapper will not: 
-   - validate your XML
-   - do any operation over the \SimpleXMLElement
+   - do anything else
 
 # Basic usage
+  As this is a wrapper the wrapped library's functionality is not covered in this documentation. Please refer to:  
+  - [The SimpleXml manual](http://php.net/manual/en/book.simplexml.php)
+  - [The SimpleXml functions reference](http://php.net/manual/en/ref.simplexml.php)
+  
   There are two main functions in the SimpleXMlLoader:
   ```
-  public function loadFile($filename, $class_name = "SimpleXMLElement", $options = 0, $ns = "", $is_prefix = false);
+  public function loadFile($filename, $xmlClass = "SimpleXMLElement", $options = 0, $xmlNamespace = "", $isPrefix = false)
   
-  public function loadString($data, $class_name = "SimpleXMLElement", $options = 0, $ns = "", $is_prefix = false);
+  public function loadString($data, $xmlClass = "SimpleXMLElement", $options = 0, $xmlNamespace = "", $isPrefix = false)
   ```
-  **NOTE:** Notice that these functions follow the signature of `simplexml_load_file()` and `simplexml_load_string()`. You should check the docs of [simplexml_load_file()](http://php.net/manual/en/function.simplexml-load-file.php) and [simplexml_load_string()](http://php.net/manual/en/function.simplexml-load-string.php) for details. And NO the author does not like the function parameters' names :).
  
-  The loader throws XmlLoaderException on any error that occurs you should always wrap it in a try/catch block and handle any errors yourself: 
+  The loader throws XmlLoaderException on any error that occurs. The exception thrown contains the message and code of the last \LibXmlError. The loader calls are meant to be wrapped in try/catch blocks and read any errors yourself: 
 ```
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
    use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
@@ -36,6 +37,10 @@
        
        //Now do something with the loaded \SimpleXMLElement...
    } catch (XmlLoaderException $e) {
+       // The last error is contained in $e:
+       $e->getMessage();
+       $e->getCode();
+       //All errors accessible through the payload:
        /** @var array $xmlErrors */
        $xmlErrors = $xmlLoader->getXmlPayload()
                               ->getXmlErrors();
@@ -44,10 +49,10 @@
 
   The XmlLoader instance is meant to be reused thus:
   - Each call to `XmlLoader->loadFile()` or `XmlLoader->loadString()` will clear any LibXml errors stored
-  - Each call to `XmlLoader->loadFile()` or `XmlLoader->loadString()`  will replace it's internal XmlPayload object
+  - Each call to `XmlLoader->loadFile()` or `XmlLoader->loadString()`  will replace it's internal XmlLoaderPayload object
 
-## Using it in a loop
-  As each consecutive call to a loader method resets the state of LibXML and the payload you must extract all the data that you need between consecutive calls.
+## Loop usage
+  Each consecutive call to a loader method resets the state of LibXML and the payload you must extract all data between calls.
 
 ```
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
@@ -65,12 +70,12 @@
                                   ->getXmlErrors();
        }
        
-       //Any data within LibXML or our XmlPayload will be lost after this iteration of the loop
+       //Any data within LibXML or our XmlLoaderPayload will be lost after this iteration of the loop
    }
 ```
 
-# Reusing XmlPayload
-  You can also reuse the XmlPayload in your application if you which. Say for example you use this wrapper to parse different XML file but then want to pass the result to different Services in your code that will handle any business logic. You could just get the XmlPayload and pass it along to a specific service (or whatever really):
+## Reusing XmlLoaderPayload
+  You can also reuse the XmlLoaderPayload in your application if you which. Say for example you use this wrapper to parse different XML file but then want to pass the result to different Services in your code that will handle any business logic. You could just get the XmlLoaderPayload and pass it along to a specific service (or whatever really):
     
 ```
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
@@ -79,23 +84,22 @@
    $xmlLoader = new XmlLoader;
    try {
        $xmlLoader->loadFile($filename);
-       /** @var XmlPayload $xmlPayload */
-       $xmlPayload = $xmlLoader->getXmlPayload();
 
        //Generic example:
        $serviceBroker->pass(
            MyCoolService::class,
-           $xmlPayload
+           $xmlLoader->getXmlPayload()
        );
-
-       //Now do something with the loaded \SimpleXMLElement...
    } catch (XmlLoaderException $e) {
        /** @var array $xmlErrors */
        $xmlErrors = $xmlLoader->getXmlPayload()
                               ->getXmlErrors();
    }
 ```
-  **NOTE:** Generally you should have you own payload objects to pass data around in your Domain. The idea of XmlPayload is to be internal for XmlLoader thus it cannot contain any logic outside of that task.
+  **NOTE:** Generally you should have you own payload objects to pass data around in your Domain. The idea of XmlLoaderPayload is to be internal for XmlLoader thus it cannot contain any logic outside of that task.
+
+# Behaviour overwritten
+  There is only one behaviour change that this library introduces: "If you pass an empty string to `simplexml_load_string()` it will return false and throw no error". The wrapper throws an exception in this case.
 
 # The XmlLoaderException and LibXML's libXMLError
   XmlLoaderException's codes are specific to this wrapper.
@@ -105,9 +109,12 @@
   Generally SimpleXML is not a solid PHP extension and, in my mind, it should be used rarely when you need to do something simple fast. Any serious work should be done via DomDocument.   
   The previous two sentences are the author's personal opinion which as with any opinion should be taken with a grain of salt.
 
+## Versioning
+  This library follows [Semver](http://semver.org). According to Semver, you will be able to upgrade to any minor or patch version of this library without any breaking changes to the public API. Semver also requires that we clearly define the public API for this library.  
+  All methods, with `public` visibility, are part of the public API. All other methods are not part of the public API. Where possible, we'll try to keep `protected` methods backwards-compatible in minor/patch versions, but if you're overriding methods then please test your work before upgrading.
+
 # Contributing
   Please do! PR's are very welcome. The author is far from thinking that this wrapper library is perfect.
-  
-# TODO
- - Finish the Unit tests and commit them
- - Rename `XmlPayload` to `XmlLoaderPayload`?
+  Any PR must first abide by the [Main goals](#Main goals) set out by this library.
+
+  Please note that this project adheres to the [Contributor Covenant v1.4](http://contributor-covenant.org/). By participating in this project you agree to abide by its terms.

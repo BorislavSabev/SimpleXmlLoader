@@ -2,7 +2,7 @@
 namespace BorislavSabev\SimpleXmlLoader;
 
 /**
- * Class XmlPayload
+ * Class XmlLoaderPayload
  * 
  * A payload for LibXML's stuff
  * 
@@ -10,16 +10,14 @@ namespace BorislavSabev\SimpleXmlLoader;
  * @package BorislavSabev\SimpleXmlLoader
  * @author Borislav Sabev <sabev.borislav@gmail.com>
  */
-class XmlPayload
+class XmlLoaderPayload
 {
     /**  @var null|string XML file's filename if any */
     public $xmlFilename = null;
     /** @var null|\SimpleXMLElement The resulting XML element as returned by SimpleXml */
     public $xmlElement = null;
-    /** @var bool Bit showing if there are errors on load */
-    public $xmlHasErrors = false;
     /** @var array An array of LibXMLError objects if there are any */
-    public $xmlErrors = [];
+    private $xmlErrors = [];
 
     /**
      * Get the loaded \SimpleXMLElement
@@ -36,7 +34,7 @@ class XmlPayload
      */
     public function getXmlErrors()
     {
-        if (empty($this->xmlErrors)) {
+        if (!$this->hasErrors()) {
             return false;
         }
 
@@ -44,25 +42,28 @@ class XmlPayload
     }
 
     /**
-     * Does the payload currently contain errors?
-     * @return bool
-     */
-    public function hasErrors()
-    {
-        return $this->xmlHasErrors;
-    }
-
-    /**
      * Load errors into the payload
-     * @param $xmlErrors
+     * @param array $xmlErrors
+     * @param bool $strictFiltering
      */
-    public function loadErrors($xmlErrors)
+    public function loadErrors($xmlErrors, $strictFiltering = false)
     {
         if (!empty($xmlErrors)) {
-            $this->xmlHasErrors = true;
             foreach ($xmlErrors as $xmlError) {
+                if ($strictFiltering && !($xmlError instanceof \LibXMLError)) {
+                    continue;
+                }
                 $this->xmlErrors[] = $xmlError;
             }
         }
+    }
+    
+    /**
+     * Does the payload currently contain errors?
+     * @return bool True if errors are present
+     */
+    public function hasErrors()
+    {
+        return (!empty($this->xmlErrors));
     }
 }

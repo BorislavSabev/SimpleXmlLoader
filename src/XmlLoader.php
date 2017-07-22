@@ -1,10 +1,8 @@
 <?php
-
 namespace BorislavSabev\SimpleXmlLoader;
 
-use BorislavSabev\SimpleXmlLoader\XmlPayload;
+use BorislavSabev\SimpleXmlLoader\XmlLoaderPayload;
 use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
-
 
 /**
  * Class XmlLoader
@@ -15,38 +13,48 @@ use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
  */
 class XmlLoader
 {
-    /** @var \BorislavSabev\SimpleXmlLoader\XmlPayload|null The XmlPayload object */
+    /** @var XmlLoaderPayload|null The XmlLoaderPayload object */
     private $xmlPayload = null;
-
-    /**
-     * XmlLoader constructor.
-     */
+    /** @var bool $libXmlErrorState */
+    private $libXmlErrorState;
+    /* Default SimpleXml class names */
+    const XML_ELEMENT_CLASS = \SimpleXMLElement::class;
+    const XML_ITERATOR_CLASS = \SimpleXMLIterator::class;
+    
+    /** XmlLoader constructor. */
     public function __construct()
     {
-        libxml_use_internal_errors(true);
+        $this->libXmlErrorState = libxml_use_internal_errors(true);
     }
 
     /**
+     * XmlLoader destructor
+     * Restore the original state of SimpleXml's $use_errors
+     */
+    public function __destruct()
+    {
+        libxml_use_internal_errors($this->libXmlErrorState);
+    }
+
+
+    /**
      * Interprets an XML file into an object
+     * 
      * Follows simplexml_load_file()'s method signature
      * 
      * @param $filename
-     * @param string $class_name
+     * @param string $xmlClass
      * @param int $options
-     * @param string $ns
-     * @param bool $is_prefix
+     * @param string $xmlNamespace
+     * @param bool $isPrefix
+     * @throws XmlLoaderException
      * @return \SimpleXMLElement
      */
-    public function loadFile($filename, $class_name = "SimpleXMLElement", $options = 0, $ns = "", $is_prefix = false)
+    public function loadFile($filename, $xmlClass = self::XML_ELEMENT_CLASS, $options = 0, $xmlNamespace = "", $isPrefix = false)
     {
-        if (!file_exists($filename)) {
-            throw new XmlLoaderException("(File does not exist: {$filename}", XmlLoaderException::ERROR_CODE_FILE);
-        }
-        
-        libxml_clear_errors();
-        $this->xmlPayload = new XmlPayload();
+        $this->resetState();
         $this->xmlPayload->xmlFilename = basename($filename);
-        $this->xmlPayload->xmlElement = simplexml_load_file($filename, $class_name, $options, $ns, $is_prefix);
+        $this->xmlPayload->xmlElement  = simplexml_load_file($filename, $xmlClass, $options, $xmlNamespace, $isPrefix);
 
         if ($this->xmlPayload->xmlElement === false) {
             $this->handleLibXmlErrors();
@@ -57,20 +65,25 @@ class XmlLoader
 
     /**
      * Interprets a string of XML into an object
+     * 
      * Follows simplexml_load_string()'s method signature
+     * Overwrites LibXml's default empty string handling by throwing an exception, normally FALSE would be returned.
+     * 
      * @param $data
-     * @param string $class_name 
+     * @param string $xmlClass 
      * @param int $options
-     * @param string $ns
-     * @param bool $is_prefix
+     * @param string $xmlNamespace
+     * @param bool $isPrefix
      * @throws XmlLoaderException
      * @return \SimpleXMLElement
      */
-    public function loadString($data, $class_name = "SimpleXMLElement", $options = 0, $ns = "", $is_prefix = false)
+    public function loadString($data, $xmlClass = self::XML_ELEMENT_CLASS, $options = 0, $xmlNamespace = "", $isPrefix = false)
     {
-        libxml_clear_errors();
-        $this->xmlPayload = new XmlPayload();
-        $this->xmlPayload->xmlElement = simplexml_load_string($data, $class_name, $options, $ns, $is_prefix);
+        $this->resetState();
+        if (empty($data)) {
+            throw new XmlLoaderException('$data is empty');
+        }
+        $this->xmlPayload->xmlElement = simplexml_load_string($data, $xmlClass, $options, $xmlNamespace, $isPrefix);
         if ($this->xmlPayload->xmlElement === false) {
             $this->handleLibXmlErrors();
         }
@@ -79,8 +92,8 @@ class XmlLoader
     }
 
     /**
-     * Get the XmlPayload object or null if you did not call any of the loaders
-     * @return \BorislavSabev\SimpleXmlLoader\XmlPayload|null
+     * Get the XmlLoaderPayload object or null if you did not call any of the loaders
+     * @return \BorislavSabev\SimpleXmlLoader\XmlLoaderPayload|null
      */
     public function getXmlPayload()
     {
@@ -88,12 +101,39 @@ class XmlLoader
     }
 
     /**
-     * Handle LibXml errors internally
+     * LibXml error handler 
+     * 
+     * Gets LibXml errors, pushes to XmlLoaderPayload, throws XmlLoaderException
+     * The exception thrown contains the message and code of the last \LibXmlError
+     * 
      * @throws XmlLoaderException
      */
-    private function handleLibXmlErrors()
+    protected function handleLibXmlErrors()
     {
+        /** @var \LibXMLError $libXmlError */
+        $libXmlError = libxml_get_last_error();
         $this->xmlPayload->loadErrors(libxml_get_errors());
-        throw new XmlLoaderException('Encountered LibXML errors', XmlLoaderException::ERROR_CODE_XML_ERRORS);
+
+        throw new XmlLoaderException($libXmlError->message, $libXmlError->code);
+    }
+    
+    /**
+     * Reset the loader's internal state
+     * - Clear libxml's error buffer
+     * - Reinitialize XmlLoaderPayload
+     * 
+     * Intended to be called before each XML loader runs
+     * 
+     * @return void
+     */
+    private function resetState()
+    {
+        if (null !== $this->xmlPayload) {
+            //Explicitly destroy the object's data
+            unset($this->xmlPayload);
+        }
+
+        libxml_clear_errors();
+        $this->xmlPayload = new XmlLoaderPayload();
     }
 }
