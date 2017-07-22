@@ -30,7 +30,7 @@
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
    use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
 
-   $xmlLoader = new XmlLoader;
+   $xmlLoader = new XmlLoader();
    try {
        /** @var \SimpleXMLElement $simpleXmlElement */
        $simpleXmlElement = $xmlLoader->loadFile($filename);
@@ -58,7 +58,7 @@
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
    use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
 
-   $xmlLoader = new XmlLoader;
+   $xmlLoader = new XmlLoader();
    
    foreach ($aBunchOfXmlStrings as $xmlString {
        try {
@@ -81,7 +81,7 @@
    use BorislavSabev\SimpleXmlLoader\XmlLoader;
    use BorislavSabev\SimpleXmlLoader\Exception\XmlLoaderException;
 
-   $xmlLoader = new XmlLoader;
+   $xmlLoader = new XmlLoader();
    try {
        $xmlLoader->loadFile($filename);
 
