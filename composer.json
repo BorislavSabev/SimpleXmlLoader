@@ -1,16 +1,19 @@
 {
     "name": "borislavsabev/simple-xml-loader",
-    "description": "A simple wrapper library around SimpleXml's simplexml_load_file() and simplexml_load_string() functions. Provides LibXMLError handling.",
+    "description": "A minimalistic SimpleXml loader. Wraps the simplexml_load_XXXX() methods and provides error handling.",
     "type": "library",
+    "license": "GPL-3.0",
     "require": {
+        "ext-libxml" : "*",
         "ext-SimpleXML": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.2"
+        "phpunit/phpunit": "^5.7"
     },
     "autoload": {
         "psr-4": {
-            "BorislavSabev\\SimpleXmlLoader\\": "src/"
+            "BorislavSabev\\SimpleXmlLoader\\": "src/",
+            "BorislavSabev\\SimpleXmlLoader\\Tests": "tests/"
         }
     },
     "authors": [

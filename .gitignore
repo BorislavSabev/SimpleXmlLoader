@@ -1,4 +1,11 @@
 # General entries
+tests/_output/*
+
+# Composer:
+composer.phar
+vendor/
+
+
 
 # IntelliJ project files
 .idea

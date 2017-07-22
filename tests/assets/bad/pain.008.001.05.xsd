@@ -1,0 +1,6 @@
+<xs:schema xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.07" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:iso:std:iso:20022:tech:xsd:pain.008.001.07">
+    <xs:element name
+    <xs:simpleType name="TrueFalseIndicator">
+        <xs:restriction base="xs:boolean"/>
+    </xs:simpleType>
+</xs:schema>
