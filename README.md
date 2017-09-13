@@ -13,6 +13,11 @@
   This wrapper will not: 
    - do anything else
 
+# Installation
+  This package is available on [Packagist](https://packagist.org/packages/borislavsabev/simple-xml-loader) and installable via Composer:
+  
+  `composer require borislavsabev/simple-xml-loader`
+
 # Basic usage
   As this is a wrapper the wrapped library's functionality is not covered in this documentation. Please refer to:  
   - [The SimpleXml manual](http://php.net/manual/en/book.simplexml.php)
