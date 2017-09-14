@@ -65,7 +65,7 @@
 
    $xmlLoader = new XmlLoader();
    
-   foreach ($aBunchOfXmlStrings as $xmlString {
+   foreach ($aBunchOfXmlStrings as $xmlString) {
        try {
             /** @var \SimpleXMLElement $simpleXmlElement */
             $simpleXmlElement = $xmlLoader->loadString($xmlString);
@@ -104,7 +104,9 @@
   **NOTE:** Generally you should have you own payload objects to pass data around in your Domain. The idea of XmlLoaderPayload is to be internal for XmlLoader thus it cannot contain any logic outside of that task.
 
 # Behaviour overwritten
-  There is only one behaviour change that this library introduces: "If you pass an empty string to `simplexml_load_string()` it will return false and throw no error". The wrapper throws an exception in this case.
+  There is only one behaviour change that this library introduces:  
+  _"If you pass an empty string to `simplexml_load_string()` it will return false and throw no error"_.   
+  The SimpleXmlLoader wrapper throws an `XmlLoaderException` in this case.
 
 # The XmlLoaderException and LibXML's libXMLError
   XmlLoaderException's codes are specific to this wrapper.
